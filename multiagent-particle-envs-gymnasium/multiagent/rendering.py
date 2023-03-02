@@ -11,8 +11,52 @@ if "Apple" in sys.version:
         os.environ['DYLD_FALLBACK_LIBRARY_PATH'] += ':/usr/lib'
         # (JDS 2016/04/15): avoid bug on Anaconda 2.3.0 / Yosemite
 
-from gym.utils import reraise
-from gym import error
+# from gymnasium.utils import reraise
+from gymnasium import error
+
+
+
+
+# https://github.com/openai/mlsh/blob/master/gym/gym/utils/reraise.py
+# http://stackoverflow.com/a/13653312
+def full_class_name(o):
+    module = o.__class__.__module__
+    if module is None or module == str.__class__.__module__:
+        return o.__class__.__name__
+    return module + '.' + o.__class__.__name__
+class ReraisedException(Exception):
+    def __init__(self, old_exc, prefix, suffix):
+        self.old_exc = old_exc
+        self.prefix = prefix
+        self.suffix = suffix
+
+    def __str__(self):
+        klass = self.old_exc.__class__
+
+        orig = "%s: %s" % (full_class_name(self.old_exc), klass.__str__(self.old_exc))
+        prefixpart = suffixpart = ''
+        if self.prefix is not None:
+            prefixpart = self.prefix + "\n"
+        if self.suffix is not None:
+            suffixpart = "\n\n" + self.suffix
+        return "%sThe original exception was:\n\n%s%s" % (prefixpart, orig, suffixpart)
+def reraise(prefix=None, suffix=None):
+    def reraise_impl(e, traceback):
+        raise e.with_traceback(traceback) from None
+
+    old_exc_type, old_exc_value, traceback = sys.exc_info()
+    if old_exc_value is None:
+        old_exc_value = old_exc_type()
+
+    e = ReraisedException(old_exc_value, prefix, suffix)
+
+    reraise_impl(e, traceback)
+
+
+
+# http://stackoverflow.com/a/13653312
+
+
 
 try:
     import pyglet
@@ -98,7 +142,8 @@ class Viewer(object):
         if return_rgb_array:
             buffer = pyglet.image.get_buffer_manager().get_color_buffer()
             image_data = buffer.get_image_data()
-            arr = np.fromstring(image_data.data, dtype=np.uint8, sep='')
+            # arr = np.fromstring(image_data.data, dtype=np.uint8, sep='')
+            arr = np.fromstring(image_data.get_data(), dtype=np.uint8, sep='')
             # In https://github.com/openai/gym-http-api/issues/2, we
             # discovered that someone using Xmonad on Arch was having
             # a window of size 598 x 398, though a 600 x 400 window
