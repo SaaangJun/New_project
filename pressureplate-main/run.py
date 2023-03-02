@@ -1,4 +1,4 @@
-import gym
+import gymnasium as gym
 import pressureplate
 
 env = gym.make('pressureplate-linear-4p-v0')

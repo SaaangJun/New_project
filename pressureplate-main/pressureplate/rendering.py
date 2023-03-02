@@ -9,8 +9,8 @@ import sys
 import numpy as np
 import math
 import six
-from gym import error
-import gym
+from gymnasium import error
+import gymnasium as gym
 
 if "Apple" in sys.version:
     if "DYLD_FALLBACK_LIBRARY_PATH" in os.environ:
