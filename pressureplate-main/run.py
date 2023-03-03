@@ -1,7 +1,7 @@
 import gym
 import pressureplate
 
-env = gym.make('pressureplate-linear-4p-v0')
+env = gym.make('pressureplate-linear-3p-v0')
 env.reset()
 
 for i in range(1000):
