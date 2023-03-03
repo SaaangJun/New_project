@@ -1,0 +1,8 @@
+Metadata-Version: 2.1
+Name: multiagent-gymnasium
+Version: 0.0.1
+Summary: Multi-Agent Goal-Driven Communication Environment... gymnasium version
+Home-page: https://github.com/dongjaekim-hail/multiagent-particle-envs-gymnasium
+Author: Dongjae Kim
+Author-email: dongjaekim@dankook.ac.kr
+License-File: LICENSE.txt

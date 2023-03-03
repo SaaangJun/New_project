@@ -10,5 +10,5 @@ env = MultiAgentEnv(world, scenario.reset_world, scenario.reward, scenario.obser
 obs = env.reset()
 obs, reward, done, info = env.step([[0,0,0,0,1],[0,0,0,0,1]])
 # rendered = env.render()
-a = env.render(mode='rgb_array')
-print('')
+env.render(mode='rgb_array')
+
