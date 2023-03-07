@@ -14,7 +14,7 @@ import random
 
 selected_cells = set()
 while len(selected_cells) < 5:
-	x, y = random.randint(0, 7), random.randint(2, 7)
+	x, y = random.randint(0, 9), random.randint(2, 9)
 	selected_cells.add((x, y))
 cells = list(selected_cells)
 
@@ -228,7 +228,9 @@ LINEAR = {
 			[2, 2],
 			[3, 2],
 			[4, 2],
-			[7, 2]
+			[7, 2],
+			[8, 2],
+			[9, 2]
 
 		],
 

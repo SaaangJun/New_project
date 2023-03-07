@@ -41,10 +41,10 @@ register(
     id=f'pressureplate-linear-3p-v0',
     entry_point='pressureplate.environment:PressurePlate',
     kwargs={
-        'height': 8,
-        'width': 8,
+        'height': 10,
+        'width': 10,
         'n_agents': 3,
-        'sensor_range': 8,
+        'sensor_range': 10,
         'layout': 'linear'
     }
 )
