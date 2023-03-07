@@ -133,17 +133,21 @@ class PressurePlate(gym.Env):
             else:
                 # NOOP
                 pass
+        num_pressed = 0 # 누른 발판 개수
 
-        for i, plate in enumerate(self.plates):
-            if not plate.pressed:
-                if [plate.x, plate.y] == [self.agents[plate.id].x, self.agents[plate.id].y]:
-                    plate.pressed = True
-                    self.doors[plate.id].open = True
-
+        for plate in self.plates:
+            if [plate.x, plate.y] == [self.agents[plate.id].x, self.agents[plate.id].y]:
+                plate.pressed = True
+                num_pressed += 1  # 발판이 눌려졌으므로 num_pressed를 1 증가시킴
             else:
-                if [plate.x, plate.y] != [self.agents[plate.id].x, self.agents[plate.id].y]:
-                    plate.pressed = False
-                    self.doors[plate.id].open = False
+                plate.pressed = False
+
+        if num_pressed == len(self.plates):  # 모든 발판이 눌려졌으면 문을 엽니다
+            for door in self.doors:
+                door.open = True
+        else:
+            for door in self.doors:
+                door.open = False
 
         # Detecting goal completion
         r = []

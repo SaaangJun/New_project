@@ -10,6 +10,13 @@
 	along the x-axis counts to the right and the positive direction along the y-axis
 
 """
+import random
+
+selected_cells = set()
+while len(selected_cells) < 5:
+	x, y = random.randint(0, 7), random.randint(2, 7)
+	selected_cells.add((x, y))
+cells = list(selected_cells)
 
 LINEAR = {
 	'FOUR_PLAYERS': {
@@ -216,30 +223,32 @@ LINEAR = {
 	'THREE_PLAYERS': {
 		'WALLS': [
 
-			[0, 3],
-			[1, 3],
-			[2, 3],
-			[3, 3],
-			[4, 3],
-			[7, 3]
+			[0, 2],
+			[1, 2],
+			[2, 2],
+			[3, 2],
+			[4, 2],
+			[7, 2]
 
 		],
 
 		# Doors are double doors of coord [[x1,x2], [y1,y2]]
 		'DOORS': [
-			[[5, 6], [3, 3]]
+			[[5, 6], [2, 2]]
 		],
 
 		'PLATES': [
-			[7, 6],
-			[2, 4]
+			[cells[0][0], cells[0][1]],
+			[cells[1][0], cells[1][1]]
+
 
 		],
 
 		'AGENTS': [
-			[5, 7],
-			[5, 6],
-			[4, 6]
+			[cells[2][0], cells[2][1]],
+			[cells[3][0], cells[3][1]],
+			[cells[4][0], cells[4][1]]
+
 		],
 
 		'GOAL': [
