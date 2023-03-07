@@ -1,5 +1,5 @@
 from pettingzoo.sisl import waterworld_v4
-from maddpg.MADDPG import MADDPG
+from maddpg.MAAC import MAAC
 from maddpg.params import scale_reward
 import numpy as np
 import torch as th
@@ -47,7 +47,7 @@ episodes_before_train = 100
 win = None
 param = None
 
-maddpg = MADDPG(n_agents, n_states, n_actions, batch_size, capacity,
+maddpg = MAAC(n_agents, n_states, n_actions, batch_size, capacity,
                 episodes_before_train)
 
 FloatTensor = th.cuda.FloatTensor if maddpg.use_cuda else th.FloatTensor
@@ -68,17 +68,16 @@ for i_episode in range(n_episode):
         # actions = {agent: maddpg.select_action(obs[agent]).data.cpu().numpy() for agent in
         #            world.agents}  #
         agents_actions = maddpg.select_action(obs).data.cpu().numpy()
-        actions = {agent: agents_actions[count] for count,agent in
-                   enumerate(n_agents)}  # this is where you would insert your policy
+        actions = np.argmax(agents_actions, axis=1)
 
         obs_, reward, done, _  = world.step(actions)
         # obs_, reward, done, _ = world.step((action*0.01).numpy())
 
-        reward = np.stack(reward.values())
+        reward = np.stack(reward)
         reward = th.from_numpy(reward).float()
         if t != max_steps - 1:
             next_obs = obs_
-            next_obs = np.stack(next_obs.values())
+            next_obs = np.stack(next_obs)
             if isinstance(next_obs, np.ndarray):
                 next_obs = th.from_numpy(next_obs).float()
         else:
@@ -86,15 +85,13 @@ for i_episode in range(n_episode):
 
         total_reward += reward.sum()
         rr += reward.cpu().numpy()
-        maddpg.memory.push(obs.data, th.from_numpy(np.stack(actions.values())).float(), next_obs, reward)
+        maddpg.memory.push(obs.data, th.from_numpy(np.stack(actions)).float(), next_obs, reward)
         obs = next_obs
 
         c_loss, a_loss = maddpg.update_policy()
 
-        done = np.stack(done.values())
-        truncated = np.stack(truncated.values())
-
-        if np.any(done) or np.any(truncated):
+        done = np.stack(done)
+        if np.any(done):
             # print('done: {} {} {} {} {}'.format(*done))
             # print('truncated: {} {} {} {} {}'.format(*truncated))
             break
