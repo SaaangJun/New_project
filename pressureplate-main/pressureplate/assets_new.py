@@ -14,7 +14,7 @@ import random
 
 selected_cells = set()
 while len(selected_cells) < 5:
-	x, y = random.randint(0, 9), random.randint(2, 9)
+	x, y = random.randint(0, 9), random.randint(3, 9)
 	selected_cells.add((x, y))
 cells = list(selected_cells)
 
