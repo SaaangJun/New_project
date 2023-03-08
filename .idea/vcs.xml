@@ -4,6 +4,5 @@
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/multiagent-particle-envs-gymnasium" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/pressureplate-gymnasium" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/pytorch-maddpg" vcs="Git" />
   </component>
 </project>
