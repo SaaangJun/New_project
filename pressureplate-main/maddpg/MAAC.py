@@ -69,17 +69,17 @@ class MAAC:
         ByteTensor = th.cuda.ByteTensor if self.use_cuda else th.ByteTensor
         FloatTensor = th.cuda.FloatTensor if self.use_cuda else th.FloatTensor
 
-        c_loss = []
-        a_loss = []
+        c_loss = []     # Critic loss
+        a_loss = []     # Actor loss
         for agent in range(self.n_agents):
-            transitions = self.memory.sample(self.batch_size)
+            transitions = self.memory.sample(self.batch_size)       # transition Data
             batch = Experience(*zip(*transitions))
             non_final_mask = ByteTensor(list(map(lambda s: s is not None,
                                                  batch.next_states)))
-            # state_batch: batch_size x n_agents x dim_obs
-            state_batch = th.stack(batch.states).type(FloatTensor)
-            action_batch = th.stack(batch.actions).type(FloatTensor)
-            reward_batch = th.stack(batch.rewards).type(FloatTensor)
+            # state_batch: batch_size x n_agents x dim_obs            # transition Data 에서 batch_size 만큼 추출
+            state_batch = th.stack(batch.states).type(FloatTensor)    # state
+            action_batch = th.stack(batch.actions).type(FloatTensor)  # action
+            reward_batch = th.stack(batch.rewards).type(FloatTensor)  # reward
             # : (batch_size_non_final) x n_agents x dim_obs
             non_final_next_states = th.stack(
                 [s for s in batch.next_states
@@ -89,7 +89,7 @@ class MAAC:
             whole_state = state_batch.view(self.batch_size, -1)
             whole_action = action_batch.view(self.batch_size, -1)
             self.critic_optimizer[agent].zero_grad()
-            current_Q = self.critics[agent](whole_state, whole_action)
+            current_Q = self.critics[agent](whole_state, whole_action)      # Critic에서 온 Q-value
 
             non_final_next_actions = [
                 self.actors_target[i](non_final_next_states[:,
@@ -102,7 +102,7 @@ class MAAC:
                                                  1).contiguous())
 
             target_Q = th.zeros(
-                self.batch_size).type(FloatTensor)
+                self.batch_size).type(FloatTensor)                         # Target- Network 에서 온 Q-value
 
             target_Q[non_final_mask] = self.critics_target[agent](
                 non_final_next_states.view(-1, self.n_agents * self.n_states),
@@ -114,11 +114,11 @@ class MAAC:
             target_Q = (target_Q.unsqueeze(1) * self.GAMMA) + (
                 reward_batch[:, agent].unsqueeze(1) * scale_reward)
 
-            loss_Q = nn.MSELoss()(current_Q, target_Q.detach())
+            loss_Q = nn.MSELoss()(current_Q, target_Q.detach())            # Critic-Loss
             loss_Q.backward()
             self.critic_optimizer[agent].step()
 
-            self.actor_optimizer[agent].zero_grad()
+            self.actor_optimizer[agent].zero_grad()                  # Actor 학습
             state_i = state_batch[:, agent, :]
             action_i = self.actors[agent](state_i)
             ac = action_batch.clone()

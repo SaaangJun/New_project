@@ -70,7 +70,7 @@ for i_episode in range(n_episode):
         agents_actions = maddpg.select_action(obs).data.cpu().numpy()
         actions = np.argmax(agents_actions, axis=1)
 
-        obs_, reward, done, _  = world.step(actions)
+        obs_, reward, done, _ = world.step(actions)
         # obs_, reward, done, _ = world.step((action*0.01).numpy())
 
         reward = np.stack(reward)
