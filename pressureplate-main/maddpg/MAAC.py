@@ -26,8 +26,8 @@ class MAAC:
     def __init__(self, n_agents, dim_obs, dim_act, batch_size,
                  capacity, episodes_before_train):
         self.actors = [ActorMAAC(dim_obs, dim_act) for i in range(n_agents)]
-        self.critics = [Critic(n_agents, dim_obs,
-                               dim_act) for i in range(n_agents)]
+        self.critics =Critic(n_agents, dim_obs,
+                               dim_act)
         self.actors_target = deepcopy(self.actors)
         self.critics_target = deepcopy(self.critics)
 
@@ -43,8 +43,8 @@ class MAAC:
         self.tau = 0.01
 
         self.var = [1.0 for i in range(n_agents)]
-        self.critic_optimizer = [Adam(x.parameters(),
-                                      lr=0.001) for x in self.critics]
+        self.critic_optimizer = Adam(self.critics.parameters(),
+                                      lr=0.001)
         self.actor_optimizer = [Adam(x.parameters(),
                                      lr=0.0001) for x in self.actors]
 
@@ -88,8 +88,8 @@ class MAAC:
             # for current agent
             whole_state = state_batch.view(self.batch_size, -1)
             whole_action = action_batch.view(self.batch_size, -1)
-            self.critic_optimizer[agent].zero_grad()
-            current_Q = self.critics[agent](whole_state, whole_action)      # Critic에서 온 Q-value
+            self.critic_optimizer.zero_grad()
+            current_Q = self.critics(whole_state, whole_action)      # Critic에서 온 Q-value
 
             non_final_next_actions = [
                 self.actors_target[i](non_final_next_states[:,
@@ -116,7 +116,7 @@ class MAAC:
 
             loss_Q = nn.MSELoss()(current_Q, target_Q.detach())            # Critic-Loss
             loss_Q.backward()
-            self.critic_optimizer[agent].step()
+            self.critic_optimizer.step()
 
             self.actor_optimizer[agent].zero_grad()                  # Actor 학습
             state_i = state_batch[:, agent, :]
@@ -124,7 +124,7 @@ class MAAC:
             ac = action_batch.clone()
             ac[:, agent, :] = action_i
             whole_action = ac.view(self.batch_size, -1)
-            actor_loss = -self.critics[agent](whole_state, whole_action)
+            actor_loss = -self.critics(whole_state, whole_action)
             actor_loss = actor_loss.mean()
             actor_loss.backward()
             self.actor_optimizer[agent].step()
@@ -132,8 +132,8 @@ class MAAC:
             a_loss.append(actor_loss)
 
         if self.steps_done % 100 == 0 and self.steps_done > 0:
+            soft_update(self.critics_target, self.critics, self.tau)
             for i in range(self.n_agents):
-                soft_update(self.critics_target[i], self.critics[i], self.tau)
                 soft_update(self.actors_target[i], self.actors[i], self.tau)
 
         return c_loss, a_loss
