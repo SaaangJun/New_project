@@ -890,7 +890,9 @@ class MultiGridEnv(gym.Env):
             see_through_walls=False,
             seed=2,
             agents=None,
-            partial_obs=True,
+            partial_obs=False,
+            #TODO
+            # 이거 partial_obs=False로 했습니다.
             agent_view_size=7,
             actions_set=Actions,
             objects_set = World
@@ -974,7 +976,9 @@ class MultiGridEnv(gym.Env):
         if self.partial_obs:
             obs = self.gen_obs()
         else:
-            obs = [self.grid.encode_for_agents(self.agents[i].pos) for i in range(len(self.agents))]
+            #TODO
+            # 여기수정했습니다.
+            obs = [self.grid.encode_for_agents(self.world, self.agents[i].pos) for i in range(len(self.agents))]
         obs=[self.objects.normalize_obs*ob for ob in obs]
         return obs
 
@@ -1315,7 +1319,9 @@ class MultiGridEnv(gym.Env):
         if self.partial_obs:
             obs = self.gen_obs()
         else:
-            obs = [self.grid.encode_for_agents(self.agents[i].pos) for i in range(len(actions))]
+            #TODO
+            # 여기도 수정했어야했음
+            obs = [self.grid.encode_for_agents(self.world, self.agents[i].pos) for i in range(len(actions))]
 
         obs=[self.objects.normalize_obs*ob for ob in obs]
 

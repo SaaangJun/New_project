@@ -32,8 +32,6 @@ poison_reward = -1.
 encounter_reward = 0.01
 n_coop = 2
 
-# TODO
-# 얘는 parallel 하지 않아서 일일히 해줘야하는게 있음.
 
 world =  gym.make('multigrid-soccer-v0')
 
@@ -44,7 +42,7 @@ np.random.seed(1234)
 th.manual_seed(1234)
 world.reset()
 n_agents = len(world.agents)
-n_states = world.observation_space.shape[2]
+n_states = np.prod(world.observation_space.shape) #TODO 이것도 수정했습니다.
 n_actions = world.action_space.n
 capacity = 1000000
 batch_size = 1000
@@ -76,7 +74,8 @@ for i_episode in range(n_episode):
         # action = maddpg.select_action(obs).data.cpu()
         # actions = {agent: maddpg.select_action(obs[agent]).data.cpu().numpy() for agent in
         #            world.agents}  #
-        agents_actions = maddpg.select_action(obs).data.cpu().numpy()
+        agents_actions = maddpg.select_action(obs.reshape((n_agents,-1))).data.cpu().numpy()
+        # agents_actions = maddpg.select_action(obs).data.cpu().numpy()
         actions = np.argmax(agents_actions, axis=1)
 
         obs_, reward, done, _ = world.step(actions)
@@ -99,8 +98,7 @@ for i_episode in range(n_episode):
 
         c_loss, a_loss = maddpg.update_policy()
 
-        done = np.stack(done)
-        if np.any(done):
+        if done:
             # print('done: {} {} {} {} {}'.format(*done))
             # print('truncated: {} {} {} {} {}'.format(*truncated))
             break
