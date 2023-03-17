@@ -1,5 +1,5 @@
-from maddpg.MAAC import MAAC
-from maddpg.params import scale_reward
+from MAAC.MAAC import MAAC
+from MAAC.params import scale_reward
 import numpy as np
 import torch as th
 
@@ -44,8 +44,8 @@ np.random.seed(1234)
 th.manual_seed(1234)
 world.reset()
 n_agents = len(world.agents)
-n_states = world.ob_dim
-n_actions = world.ac_dim
+n_states = world.observation_space.shape[2]
+n_actions = world.action_space.n
 capacity = 1000000
 batch_size = 1000
 
