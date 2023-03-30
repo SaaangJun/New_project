@@ -63,7 +63,7 @@ for i_episode in range(n_episode):
     obs = np.stack(obs)
     if isinstance(obs, np.ndarray):
         obs = th.from_numpy(obs).float()
-    total_reward = 0.0
+    total_reward = 0.0                              ############# 0.0 이어서 0으로밖에 안나오는듯
     rr = np.zeros((n_agents,))
     for t in range(max_steps):
         # render every 100 episodes to speed up training
