@@ -51,12 +51,10 @@ class MAAC:
         if self.use_cuda:
             for x in self.actors:
                 x.cuda()
-            for x in self.critics:
-                x.cuda()
+            self.critics.cuda()
             for x in self.actors_target:
                 x.cuda()
-            for x in self.critics_target:
-                x.cuda()
+            self.critics_target.cuda()
 
         self.steps_done = 0
         self.episode_done = 0
