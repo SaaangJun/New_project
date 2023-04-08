@@ -7,10 +7,6 @@ import wandb
 from gym.envs.registration import register
 import gym
 import argparse
-parser = argparse.ArgumentParser(description=None)
-parser.add_argument('-e', '--env', default='soccer', type=str)
-
-args = parser.parse_args()
 
 register(
             id='multigrid-soccer-v0',
@@ -32,31 +28,53 @@ poison_reward = -1.
 encounter_reward = 0.01
 n_coop = 2
 
+env_name = 'multigrid-soccer-v0'
 
-world = gym.make('multigrid-soccer-v0')
+world = gym.make(env_name)
 
 # vis = visdom.Visdom(port=5274)
 reward_record = []
 
 np.random.seed(1234)
 th.manual_seed(1234)
-world.reset()
-n_agents = len(world.agents)
-n_states = np.prod(world.observation_space.shape) #TODO 이것도 수정했습니다.
-n_actions = world.action_space.n
-capacity = 1000000
-batch_size = 1000
 
-n_episode = int(3e6)
-max_steps = 1000
-episodes_before_train = 100
+parser = argparse.ArgumentParser(description=None)
+parser.add_argument('--n-agents', default=len(world.agents), type=int)
+parser.add_argument('--n-states', default=np.prod(world.observation_space.shape), type=int)
+parser.add_argument('--n-actions', default=world.action_space.n, type=int)
+parser.add_argument('--capacity', default=1000000, type=int)
+parser.add_argument('--batch-size', default=1000, type=int)
+parser.add_argument('--n-episode', default=int(3e6), type=int)
+parser.add_argument('--max-steps', default=1000, type=int)
+parser.add_argument('--episodes-before-train', default=1, type=int)
+args = parser.parse_args()
+
+world.reset()
+
+n_agents = args.n_agents
+n_states = args.n_states
+n_actions = args.n_actions
+capacity = args.capacity
+batch_size = args.batch_size
+n_episode = args.n_episode
+max_steps = args.max_steps
+episodes_before_train = args.episodes_before_train
+
+# n_agents = len(world.agents)
+# n_states = np.prod(world.observation_space.shape) #TODO 이것도 수정했습니다.
+# n_actions = world.action_space.n
+# capacity = 1000000
+# batch_size = 1000
+# n_episode = int(3e6)
+# max_steps = 1000
+# episodes_before_train = 100
 
 win = None
 param = None
 
 maddpg = MAAC(n_agents, n_states, n_actions, batch_size, capacity,
                 episodes_before_train)
-wandb.init(project="baebae_0409")
+wandb.init(project="baebae_0409",config=args.__dict__)
 wandb.run.name = f"baebaerun_maac"
 
 FloatTensor = th.cuda.FloatTensor if maddpg.use_cuda else th.FloatTensor
@@ -98,7 +116,7 @@ for i_episode in range(n_episode):
         rr += reward.cpu().numpy()
         
         #make actions to be one-hot vectors
-        actions = np.eye(n_actions)[actions].reshape((-1,))
+        actions = np.eye(n_actions)[actions]
         
         maddpg.memory.push(obs.data, th.from_numpy(np.stack(actions)).float(), next_obs, reward)
         obs = next_obs
@@ -125,11 +143,7 @@ for i_episode in range(n_episode):
               'scale_reward=%f\n' % scale_reward +
               'agent=%d' % n_agents +
               ', coop=%d' % n_coop +
-              ' \nlr=0.001, 0.0001, sensor_range=0.3\n' +
-              'food=%f, poison=%f, encounter=%f' % (
-                  food_reward,
-                  poison_reward,
-                  encounter_reward))
+              ' \nlr=0.001, 0.0001, sensor_range=0.3\n')
 wandb.finish()
 
 world.close()

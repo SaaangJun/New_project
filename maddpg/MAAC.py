@@ -90,11 +90,8 @@ class MAAC:
             whole_action = action_batch.view(self.batch_size, -1)
             self.critic_optimizer.zero_grad()
             current_Q = self.critics(whole_state, whole_action)      # Critic에서 온 Q-value
-
             non_final_next_actions = [
-                self.actors_target[i](non_final_next_states[:,
-                                                            i,
-                                                            :]) for i in range(
+                self.actors_target[i](non_final_next_states[:,i,:].view(-1,self.n_states)) for i in range(
                                                                 self.n_agents)]
             non_final_next_actions = th.stack(non_final_next_actions)
             non_final_next_actions = (
@@ -104,7 +101,12 @@ class MAAC:
             target_Q = th.zeros(
                 self.batch_size).type(FloatTensor)                         # Target- Network 에서 온 Q-value
 
-            target_Q[non_final_mask] = self.critics_target[agent](
+            # target_Q[non_final_mask] = self.critics_target[agent](
+            #     non_final_next_states.view(-1, self.n_agents * self.n_states),
+            #     non_final_next_actions.view(-1,
+            #                                 self.n_agents * self.n_actions)
+            # ).squeeze()
+            target_Q[non_final_mask] = self.critics_target(
                 non_final_next_states.view(-1, self.n_agents * self.n_states),
                 non_final_next_actions.view(-1,
                                             self.n_agents * self.n_actions)
@@ -120,7 +122,7 @@ class MAAC:
 
             self.actor_optimizer[agent].zero_grad()                  # Actor 학습
             state_i = state_batch[:, agent, :]
-            action_i = self.actors[agent](state_i)
+            action_i = self.actors[agent](state_i.view(-1, self.n_states))
             ac = action_batch.clone()
             ac[:, agent, :] = action_i
             whole_action = ac.view(self.batch_size, -1)
