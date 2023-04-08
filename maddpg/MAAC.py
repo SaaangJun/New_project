@@ -161,7 +161,7 @@ class MAAC:
 
             # random action part
             act_i = np.random.choice(np.linspace(0, self.n_actions - 1, self.n_actions).astype(np.int16),
-                             p=act.detach().numpy())
+                             p=act.detach().to('cpu').numpy())
 
             # if it requires one hot vector encoding
             _act = np.zeros((self.n_actions))
