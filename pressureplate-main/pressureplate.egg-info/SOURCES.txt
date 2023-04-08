@@ -3,6 +3,7 @@ README.md
 setup.py
 pressureplate/__init__.py
 pressureplate/assets.py
+pressureplate/assets_new.py
 pressureplate/environment.py
 pressureplate/rendering.py
 pressureplate.egg-info/PKG-INFO

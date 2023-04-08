@@ -1,8 +1,8 @@
-from MAAC.MAAC import MAAC
-from MAAC.params import scale_reward
+from maddpg.MAAC import MAAC
+from maddpg.params import scale_reward
 import numpy as np
 import torch as th
-
+import wandb
 # import pressureplate
 from gym.envs.registration import register
 import gym
@@ -25,7 +25,7 @@ register(
 
 
 # do not render the scene
-e_render = True
+e_render = False
 
 food_reward = 10.
 poison_reward = -1.
@@ -47,7 +47,7 @@ n_actions = world.action_space.n
 capacity = 1000000
 batch_size = 1000
 
-n_episode = 20000
+n_episode = int(3e6)
 max_steps = 1000
 episodes_before_train = 100
 
@@ -56,6 +56,8 @@ param = None
 
 maddpg = MAAC(n_agents, n_states, n_actions, batch_size, capacity,
                 episodes_before_train)
+wandb.init(project="baebae_0409")
+wandb.run.name = f"baebaerun_maac"
 
 FloatTensor = th.cuda.FloatTensor if maddpg.use_cuda else th.FloatTensor
 for i_episode in range(n_episode):
@@ -66,6 +68,7 @@ for i_episode in range(n_episode):
     total_reward = 0.0
     rr = np.zeros((n_agents,))
     for t in range(max_steps):
+        log = {}
         # render every 100 episodes to speed up training
         if i_episode % 20 == 0 and e_render:
             world.render()
@@ -93,10 +96,20 @@ for i_episode in range(n_episode):
 
         total_reward += reward.sum()
         rr += reward.cpu().numpy()
+        
+        #make actions to be one-hot vectors
+        actions = np.eye(n_actions)[actions].reshape((-1,))
+        
         maddpg.memory.push(obs.data, th.from_numpy(np.stack(actions)).float(), next_obs, reward)
         obs = next_obs
 
         c_loss, a_loss = maddpg.update_policy()
+
+        # add reward, c_loss, a_loss to log
+        log['t/reward'] = reward.sum()
+        log['t/c_loss'] = c_loss
+        log['t/a_loss'] = a_loss
+        wandb.log(log)
 
         if done:
             # print('done: {} {} {} {} {}'.format(*done))
@@ -117,43 +130,6 @@ for i_episode in range(n_episode):
                   food_reward,
                   poison_reward,
                   encounter_reward))
-
-    # if win is None:
-    #     win = vis.line(X=np.arange(i_episode, i_episode+1),
-    #                    Y=np.array([
-    #                        np.append(total_reward, rr)]),
-    #                    opts=dict(
-    #                        ylabel='Reward',
-    #                        xlabel='Episode',
-    #                        title='MADDPG on WaterWorld_mod\n' +
-    #                        'agent=%d' % n_agents +
-    #                        ', coop=%d' % n_coop +
-    #                        ', sensor_range=0.2\n' +
-    #                        'food=%f, poison=%f, encounter=%f' % (
-    #                            food_reward,
-    #                            poison_reward,
-    #                            encounter_reward),
-    #                        legend=['Total'] +
-    #                        ['Agent-%d' % i for i in range(n_agents)]))
-    # else:
-    #     vis.line(X=np.array(
-    #         [np.array(i_episode).repeat(n_agents+1)]),
-    #              Y=np.array([np.append(total_reward,
-    #                                    rr)]),
-    #              win=win,
-    #              update='append')
-    # if param is None:
-    #     param = vis.line(X=np.arange(i_episode, i_episode+1),
-    #                      Y=np.array([maddpg.var[0]]),
-    #                      opts=dict(
-    #                          ylabel='Var',
-    #                          xlabel='Episode',
-    #                          title='MADDPG on WaterWorld: Exploration',
-    #                          legend=['Variance']))
-    # else:
-    #     vis.line(X=np.array([i_episode]),
-    #              Y=np.array([maddpg.var[0]]),
-    #              win=param,
-    #              update='append')
+wandb.finish()
 
 world.close()
