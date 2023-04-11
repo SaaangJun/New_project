@@ -24,7 +24,7 @@ def hard_update(target, source):
 
 class MAAC:
     def __init__(self, n_agents, dim_obs, dim_act, batch_size,
-                 capacity, episodes_before_train):
+                 capacity, episodes_before_train, epsilon=0.1):
         self.actors = [ActorMAAC(dim_obs, dim_act) for i in range(n_agents)]
         self.critics =Critic(n_agents, dim_obs,
                                dim_act)
@@ -41,6 +41,7 @@ class MAAC:
 
         self.GAMMA = 0.95
         self.tau = 0.01
+        self.epsilon = epsilon
 
         self.var = [1.0 for i in range(n_agents)]
         self.critic_optimizer = Adam(self.critics.parameters(),
@@ -167,6 +168,11 @@ class MAAC:
             _act = np.zeros((self.n_actions))
             _act[act_i] = 1
             act = th.from_numpy(_act)
+
+            # if random number is smaller than epsilon, do random action
+            if np.random.rand() < self.epsilon:
+                act = th.from_numpy(np.random.rand(self.n_actions))
+                act /= act.sum()
             actions[i, :] = act
         self.steps_done += 1
 

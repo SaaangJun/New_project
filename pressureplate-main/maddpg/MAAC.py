@@ -24,7 +24,7 @@ def hard_update(target, source):
 
 class MAAC:
     def __init__(self, n_agents, dim_obs, dim_act, batch_size,
-                 capacity, episodes_before_train):
+                 capacity, episodes_before_train, epsilon=0.1):
         self.actors = [ActorMAAC(dim_obs, dim_act) for i in range(n_agents)]
         self.critics =Critic(n_agents, dim_obs,
                                dim_act)

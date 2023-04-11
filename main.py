@@ -47,6 +47,8 @@ parser.add_argument('--batch-size', default=1000, type=int)
 parser.add_argument('--n-episode', default=int(3e6), type=int)
 parser.add_argument('--max-steps', default=1000, type=int)
 parser.add_argument('--episodes-before-train', default=1, type=int)
+# add eps
+parser.add_argument('--eps', default=0.1, type=float)
 args = parser.parse_args()
 
 world.reset()
