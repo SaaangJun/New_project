@@ -53,7 +53,7 @@ parser.add_argument('--n-actions', default=world.action_space.n, type=int)
 parser.add_argument('--capacity', default=1000000, type=int)
 parser.add_argument('--batch-size', default=1000, type=int)
 parser.add_argument('--n-episode', default=int(3e6), type=int)
-parser.add_argument('--max-steps', default=1000, type=int)
+parser.add_argument('--max-steps', default=int(1e8), type=int)
 parser.add_argument('--episodes-before-train', default=10000, type=int)
 # add eps
 parser.add_argument('--eps', default=0.2, type=float)
@@ -88,14 +88,17 @@ wandb.init(project="baebae_0409",config=args.__dict__)
 wandb.run.name = f"baebaerun_maac"
 
 FloatTensor = th.cuda.FloatTensor if maddpg.use_cuda else th.FloatTensor
-for i_episode in range(n_episode):
+# for i_episode in range(n_episode):
+i_episode=0
+while True:
     obs = world.reset()
     obs = np.stack(obs)
     if isinstance(obs, np.ndarray):
         obs = th.from_numpy(obs).float()
     total_reward = 0.0
     rr = np.zeros((n_agents,))
-    for t in range(max_steps):
+    t = 0
+    while True:
         log = {}
         # render every 100 episodes to speed up training
         if i_episode % 20 == 0 and e_render:
@@ -144,7 +147,9 @@ for i_episode in range(n_episode):
             print('reward: ', reward.sum())
         wandb.log(log)
 
-        if done:
+        t += 1
+
+        if done or (t>max_steps-1):
             # print('done: {} {} {} {} {}'.format(*done))
             # print('truncated: {} {} {} {} {}'.format(*truncated))
             break
@@ -159,6 +164,10 @@ for i_episode in range(n_episode):
               'agent=%d' % n_agents +
               ', coop=%d' % n_coop +
               ' \nlr=0.001, 0.0001, sensor_range=0.3\n')
+    i_episode += 1
+    if t>max_steps-1:
+        break
+
 wandb.finish()
 
 world.close()
