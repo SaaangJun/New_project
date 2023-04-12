@@ -8,6 +8,10 @@ from gym.envs.registration import register
 import gym
 import argparse
 
+
+
+
+
 register(
             id='multigrid-soccer-v0',
             entry_point='gym_multigrid.envs:SoccerGame4HEnv10x15N2',
@@ -18,6 +22,10 @@ register(
             id='multigrid-collect-v0',
             entry_point='gym_multigrid.envs:CollectGame4HEnv10x10N2',
         )
+
+
+
+
 
 
 # do not render the scene
@@ -114,6 +122,9 @@ for i_episode in range(n_episode):
         else:
             next_obs = None
 
+        # subtract reward with t*1e-3
+        reward = reward - t*1e-3
+
         total_reward += reward.sum()
         rr += reward.cpu().numpy()
         
@@ -129,6 +140,8 @@ for i_episode in range(n_episode):
         log['t/reward'] = reward.sum()
         log['t/c_loss'] = c_loss
         log['t/a_loss'] = a_loss
+        if reward.sum() >0:
+            print('reward: ', reward.sum())
         wandb.log(log)
 
         if done:
