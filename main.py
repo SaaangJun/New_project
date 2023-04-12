@@ -153,10 +153,13 @@ while True:
             # print('done: {} {} {} {} {}'.format(*done))
             # print('truncated: {} {} {} {} {}'.format(*truncated))
             break
+
     maddpg.episode_done += 1
     print('Episode: %d, reward = %f' % (i_episode, total_reward))
     reward_record.append(total_reward)
-
+    log['episode/reward']=reward.sum()
+    log['episode/tot_reward']=total_reward
+    wandb.log(log)
     if maddpg.episode_done == maddpg.episodes_before_train:
         print('training now begins...')
         print('MADDPG on WaterWorld\n' +
