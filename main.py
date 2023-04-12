@@ -48,7 +48,7 @@ parser.add_argument('--n-episode', default=int(3e6), type=int)
 parser.add_argument('--max-steps', default=1000, type=int)
 parser.add_argument('--episodes-before-train', default=10000, type=int)
 # add eps
-parser.add_argument('--eps', default=0.1, type=float)
+parser.add_argument('--eps', default=0.2, type=float)
 args = parser.parse_args()
 
 world.reset()
@@ -75,7 +75,7 @@ win = None
 param = None
 
 maddpg = MAAC(n_agents, n_states, n_actions, batch_size, capacity,
-                episodes_before_train)
+                episodes_before_train, epsilon=args.eps)
 wandb.init(project="baebae_0409",config=args.__dict__)
 wandb.run.name = f"baebaerun_maac"
 
