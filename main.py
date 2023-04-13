@@ -150,6 +150,11 @@ while True:
         t += 1
 
         if done or (t>max_steps-1):
+            obs = world.reset()
+            obs = np.stack(obs)
+            if isinstance(obs, np.ndarray):
+                obs = th.from_numpy(obs).float()
+            obs = obs.type(FloatTensor)
             # print('done: {} {} {} {} {}'.format(*done))
             # print('truncated: {} {} {} {} {}'.format(*truncated))
             break
