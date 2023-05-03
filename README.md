@@ -7,3 +7,23 @@
 
     1 . MAAC 코드 수정확인 후 매칭시키기.
     2 . 
+
+
+
+
+3/17 
+
+* GCN 적용 MA RL 진행예정.
+
+
+* Multi agent Minigrid Soccer 추가  
+
+* MAAC 적용 과정 중 shape 문제 발생.
+
+
+TODO:
+
+
+
+
+
